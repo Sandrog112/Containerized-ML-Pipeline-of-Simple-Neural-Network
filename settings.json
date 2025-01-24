@@ -1,0 +1,12 @@
+{
+    "general": {
+      "data_dir": "data"
+    },
+    "train": {
+      "table_name": "train_data.csv"
+    },
+    "inference": {
+      "inp_table_name": "inference_data.csv"
+    }
+  }
+  
