@@ -9,7 +9,7 @@ ENV CONF_PATH=${settings_name}
 WORKDIR /app
 
 # Copy data folder to Docker
-COPY data/ /app/data
+COPY data_process/data/ /app/data_process/data
 
 # Copy the training code
 COPY training /app/training

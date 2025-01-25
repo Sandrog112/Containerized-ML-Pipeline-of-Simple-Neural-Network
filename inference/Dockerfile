@@ -2,17 +2,17 @@
 FROM python:3.10
 
 # Initialize model and settings with default values
-ARG model_name=prod_model.pickle
+ARG model_name=iris_classifier.pth
 ARG settings_name=settings.json
 ENV CONF_PATH=${settings_name}
 
 WORKDIR /app
 
 # Copy data folder to Docker
-COPY data/ /app/data
+COPY data_process/data/ /app/data_process/data
 
 # Copy the specific model to Docker 
-COPY models/${model_name} /app/models/${model_name}.pickle
+COPY models/${model_name} /app/models/${model_name}
 
 # Copy the inference code
 COPY inference /app/inference
