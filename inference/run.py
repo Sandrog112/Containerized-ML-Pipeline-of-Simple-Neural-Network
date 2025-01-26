@@ -2,8 +2,15 @@ import os
 import sys
 import torch
 import pandas as pd
+import numpy as np
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import DataLoader, TensorDataset
+import logging
+import time  
+
+# Configure logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from training.train import IrisClassifier
@@ -18,11 +25,12 @@ MODEL_PATH = os.path.join(MODELS_DIR, 'iris_classifier.pth')
 def load_inference_data(inference_path):
     try:
         df = pd.read_csv(inference_path) 
+        logger.info(f"Inference data loaded successfully from {inference_path}.")
     except FileNotFoundError:
-        print(f"Error: The file at {inference_path} was not found.")
+        logger.error(f"Error: The file at {inference_path} was not found.")
         sys.exit(1)
     except Exception as e:
-        print(f"Error reading the CSV file: {e}")
+        logger.error(f"Error reading the CSV file: {e}")
         sys.exit(1)
 
     # Standardizing the features
@@ -35,17 +43,27 @@ def load_inference_data(inference_path):
 def run_inference(model, data_loader):
     model.eval()  
     predictions = []
+    start_time = time.time() 
     with torch.no_grad():  
         for inputs in data_loader:
             outputs = model(inputs[0])  
             _, predicted = torch.max(outputs, 1)  
             predictions.extend(predicted.numpy())
+    
+    inference_time = time.time() - start_time  
+
+    if not predictions:
+        logger.error("Error: No predictions were made. Please check the model and data.")
+        sys.exit(1)
+
+    logger.info(f"Inference completed, {len(predictions)} predictions made.")
+    logger.info(f"Inference time: {inference_time:.4f} seconds.") 
     return predictions
 
 if __name__ == "__main__":
     # Checking if the model file exists
     if not os.path.exists(MODEL_PATH):
-        print(f"Error: The model file at {MODEL_PATH} does not exist.")
+        logger.error(f"Error: The model file at {MODEL_PATH} does not exist.")
         sys.exit(1)
     
     # Define model dimensions
@@ -56,9 +74,10 @@ if __name__ == "__main__":
     # Initialize model and load trained weights
     model = IrisClassifier(input_dim, hidden_dim, output_dim)
     try:
-        model.load_state_dict(torch.load(MODEL_PATH))  # Load the model weights
+        model.load_state_dict(torch.load(MODEL_PATH))  
+        logger.info(f"Model loaded successfully from {MODEL_PATH}.")
     except RuntimeError as e:
-        print(f"Error loading the model: {e}")
+        logger.error(f"Error loading the model: {e}")
         sys.exit(1)
 
     # Load inference data
@@ -72,7 +91,9 @@ if __name__ == "__main__":
     output_path = os.path.join(ROOT_DIR, '../data_process/data/inference_results.csv')
     try:
         pd.DataFrame(predictions, columns=['predictions']).to_csv(output_path, index=False)
-        print(f'Inference results saved to {output_path}')
+        logger.info(f'Inference results saved to {output_path}')
     except Exception as e:
-        print(f"Error saving the inference results: {e}")
+        logger.error(f"Error saving the inference results: {e}")
         sys.exit(1)
+
+    logger.info("Inference process completed successfully.")

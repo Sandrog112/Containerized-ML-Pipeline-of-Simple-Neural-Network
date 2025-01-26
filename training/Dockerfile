@@ -1,5 +1,5 @@
 # Use a base Python image
-FROM python:3.10
+FROM python:3.10-slim
 
 # Initialize settings_name variable with the default value
 ARG settings_name=settings.json

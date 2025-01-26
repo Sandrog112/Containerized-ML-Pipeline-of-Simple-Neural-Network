@@ -1,5 +1,5 @@
 # Start from a base Python image
-FROM python:3.10
+FROM python:3.10-slim  
 
 # Initialize model and settings with default values
 ARG model_name=iris_classifier.pth
@@ -16,6 +16,9 @@ COPY models/${model_name} /app/models/${model_name}
 
 # Copy the inference code
 COPY inference /app/inference
+
+# Copy the training code
+COPY training /app/training
 
 # Copy utility scripts and configurations
 COPY ${CONF_PATH} /app

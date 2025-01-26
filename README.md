@@ -90,7 +90,7 @@ Once the model is trained, it can be used for inference. The inference pipeline 
 To run the inference locally:
 
 ```bash
-docker run -it iris_training_image /bin/bash
+python inference/run.py
 ```
 
 ### Running Inference with Docker

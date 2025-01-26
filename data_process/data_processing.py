@@ -3,7 +3,12 @@ import sys
 import pandas as pd
 import logging
 import json
+import numpy as np
 from sklearn import datasets
+from time import time
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
 
 # Configure logging
 logger = logging.getLogger()
@@ -89,7 +94,34 @@ if __name__ == "__main__":
 
     # Generate and save labeled and unlabeled Iris datasets
     gen = IrisSetGenerator()
-    gen.create(is_labeled=True, save_path=TRAIN_PATH)
-    gen.create(is_labeled=False, save_path=INFERENCE_PATH)
+    train_df = gen.create(is_labeled=True, save_path=TRAIN_PATH)
+    inference_df = gen.create(is_labeled=False, save_path=INFERENCE_PATH)
+    
+    # Log dataset sizes
+    logger.info(f"Training dataset size: {train_df.shape[0]} rows, {train_df.shape[1]} columns.")
+    logger.info(f"Inference dataset size: {inference_df.shape[0]} rows, {inference_df.shape[1]} columns.")
+
+    # Train a simple model and log time and quality
+    logger.info("Training model...")
+
+    X_train = train_df.drop(columns=['target'])
+    y_train = train_df['target']
+    
+    start_time = time()
+    model = RandomForestClassifier()
+    model.fit(X_train, y_train)
+    training_time = time() - start_time
+    logger.info(f"Training time: {training_time:.4f} seconds.")
+    
+    # Make predictions and log quality (accuracy)
+    logger.info("Making predictions...")
+
+    start_time = time()
+    y_pred = model.predict(X_train)
+    inference_time = time() - start_time
+    logger.info(f"Inference time: {inference_time:.4f} seconds.")
+    
+    accuracy = accuracy_score(y_train, y_pred)
+    logger.info(f"Model accuracy: {accuracy:.4f}")
     
     logger.info("Script completed successfully.")
